@@ -8,7 +8,7 @@ def setParams():
 
     params.N_SIMULATIONS = 30  # number of times to run the simulation
     params.MAX_N_STEPS = int(1e5)  # maximum number of steps to simulate
-    params.MAX_N_EPISODES = 4  # maximum number of episodes to simulate (use Inf if no max)
+    params.MAX_N_EPISODES = 40  # maximum number of episodes to simulate (use np.inf if no max)
 
     # MDP PARAMETERS
 
@@ -47,6 +47,8 @@ def setParams():
     # Other planning parameters
     # boolean variable indicating if planning should happen only if the agent is at the start or goal state
     params.planOnlyAtGorS = True
+    # if we want an experiment with non-stationarity wrt the reward structure (i.e. change of goal location)
+    params.change_goal = True
     # if planning should occur at the previous goal state until the agent has found the new one
     params.plan_at_prev_goal = True
     params.baselineGain = 1e-10  # Gain is set to at least this value (interpreted as "information gain")

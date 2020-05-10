@@ -37,6 +37,8 @@ class Replay_Sim:
         self.side_jj = side_jj
         self.first_goal = self.params.s_end
         self.this_goal = np.copy(self.params.s_end)
+        self.last_tsi_at_goal_1 = np.nan
+        self.first_tsi_at_goal_2 = np.nan
 
         self.n_states = side_ii * side_jj  # maximal number of states
         self.n_actions = 4  # number of actions available at each state
@@ -811,9 +813,15 @@ class Replay_Sim:
                 ts = 0
                 self.elig_trace = np.zeros(self.elig_trace.shape)  # Reset eligibility matrix
                 self.num_episodes += 1  # Record that we got to the end
-                # halfway through the experiment, change the goal location:
-                if self.num_episodes == self.params.MAX_N_EPISODES / 2 - 1:
-                    self.this_goal = self.params.s_end_change
+                if self.params.change_goal:
+                    # halfway through the experiment, change the goal location:
+                    if self.num_episodes == self.params.MAX_N_EPISODES / 2:
+                        self.last_tsi_at_goal_1 = tsi
+                        self.this_goal = self.params.s_end_change
+                    # the next episode means that the agent found the new goal; record this
+                    if self.num_episodes == self.params.MAX_N_EPISODES / 2 + 1:
+                        self.first_tsi_at_goal_2 = tsi
+
                 start_time = time.perf_counter()  # reset start time
 
             # SAVE SIMULATION DATA
@@ -824,7 +832,7 @@ class Replay_Sim:
                     n_missing_rows = 20 - planning_backups.shape[0]
                     # fill missing rows with nans
                     planning_backups = np.vstack([planning_backups, np.full((n_missing_rows, 5), np.nan)])
-                # In a multi-step sequence, simData.replay.state has 1->2 in one row, 2->3 in another row, etc
+                # In a multi-step sequence, self.replay['state'] has 1->2 in one row, 2->3 in another row, etc
                 self.replay['state'][tsi] = planning_backups[:, 0]
                 self.replay['action'][tsi] = planning_backups[:, 1]
                 backups = {'gain': backups_gain, 'need': backups_need, 'EVM': backups_EVM, 'TD': backups_TD}

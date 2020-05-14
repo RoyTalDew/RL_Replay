@@ -29,6 +29,10 @@ class Replay_Sim:
                                                                 "'gain_only' or 'need_only'".format(replay_strategy)
         # INITIALIZE VARIABLES
         self.params = params
+        self.params_dict = {}
+        for key in self.params.__dict__:
+            if not key.startswith('__'):
+                self.params_dict[key] = self.params.__dict__[key]
         self.replay_strategy = replay_strategy
         self.sim_i = str(sim_i)
 
@@ -280,7 +284,6 @@ class Replay_Sim:
         else:
             stp1_value = np.max(self.Q[stp1i])  # Q-learning (learns Q*)
         delta = rew + self.params.gamma * stp1_value - self.Q[sti, at]  # prediction error (Q-learning)
-        # plt.imshow(self.Q[:, 0].reshape(6, 9))
         if self.replay_strategy == 'prioritized_sweeping':
             self.update_p_queue(delta, sti, at, rew, stp1i)
 
@@ -386,14 +389,14 @@ class Replay_Sim:
             curr_step_is_goal = self.exp_arr_full[-1, 3] in np.ravel_multi_index(
                 [self.this_goal[:, 0], self.this_goal[:, 1]], [self.side_ii, self.side_jj])
             # previous state (notice that we include both start and end state of the previous time step, because the
-            # last row of self.exp_arr_full might be a transition from goal to start)
+            # last row of self.exp_arr_full might be a transition from goal to start):
             last_step_was_goal = np.any(np.isin([self.exp_arr_full[-2, 3], self.exp_arr_full[-2, 0]],
                                                 np.ravel_multi_index([self.this_goal[:, 0], self.this_goal[:, 1]],
                                                                      [self.side_ii, self.side_jj])))
             # if we want to plan at the previous goal until the new one is reached
             if self.params.plan_at_prev_goal:
                 # check whether we are halfway through the experiment (when the goal site changes)
-                if self.num_episodes == (self.params.MAX_N_EPISODES / 2 - 1):
+                if self.num_episodes == (self.params.MAX_N_EPISODES / 2):
                     # consider the previous goal as a goal state just for planning
                     curr_step_is_goal = self.exp_arr_full[-1, 3] in np.ravel_multi_index(
                         [self.first_goal[:, 0], self.first_goal[:, 1]], [self.side_ii, self.side_jj])
@@ -792,7 +795,7 @@ class Replay_Sim:
                     goal_num = np.argwhere(np.all(np.isin(self.this_goal, st), axis=0))[0][0]
                     startnum = goal_num % self.params.s_start.shape[0]
                     stp1 = self.params.s_start[startnum]
-                    stp1i = np.ravel_multi_index(st, [self.side_ii, self.side_jj])
+                    stp1i = np.ravel_multi_index(stp1, [self.side_ii, self.side_jj])
 
                 # Update transition matrix and list of experiences
                 if self.params.Tgoal2start:
@@ -801,7 +804,7 @@ class Replay_Sim:
                     # Shift corresponding row of T towards target_vec
                     self.T[sti] += (self.params.TLearnRate * (target_vec - self.T[sti]))[0]
                     # Add transition to expList:
-                    self.exp_arr_full = np.append(self.exp_arr_full, [[sti, at, rew, stp1i]], axis=0)
+                    self.exp_arr_full = np.append(self.exp_arr_full, [[sti, np.nan, np.nan, stp1i]], axis=0)
                 # Move the agent to the next location
                 st = stp1
                 sti = stp1i
@@ -818,10 +821,10 @@ class Replay_Sim:
                     if self.num_episodes == self.params.MAX_N_EPISODES / 2:
                         self.last_tsi_at_goal_1 = tsi
                         self.this_goal = self.params.s_end_change
+                        print("\nGoal location changed\n")
                     # the next episode means that the agent found the new goal; record this
                     if self.num_episodes == self.params.MAX_N_EPISODES / 2 + 1:
                         self.first_tsi_at_goal_2 = tsi
-
                 start_time = time.perf_counter()  # reset start time
 
             # SAVE SIMULATION DATA

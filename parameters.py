@@ -18,7 +18,6 @@ def setParams():
     params.alpha = 1.0  # learning rate
     params.lamb = 0  # eligibility trace parameter
     params.TLearnRate = 0.9  # learning rate for the transition matrix (0=uniform; 1=only last)
-    params.actPolicy = 'softmax'  # choose 'e_greedy' or 'softmax'
     params.softmaxInvT = 5  # soft-max inverse temperature temperature
     params.epsilon = 0.05  # probability of a random action (epsilon-greedy)
     params.PS_thresh = 0  # threshold for appending the absolute dela value in prioritized sweeping

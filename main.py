@@ -21,7 +21,7 @@ class Replay_Sim:
         """
         params: simulation parameters
         replay_strategy = 'prioritized_sweeping', 'EVB', 'no_replay', 'dyna', 'gain_only' or 'need_only'
-        sim_i: index i\n simulation loop
+        sim_i: index in simulation loop
         """
         acceptable_replay_strategies = ['prioritized_sweeping', 'EVB', 'no_replay', 'dyna', 'gain_only', 'need_only']
         assert replay_strategy in acceptable_replay_strategies, "'{}' is not an acceptable replay strategy, " \

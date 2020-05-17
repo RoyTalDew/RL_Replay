@@ -749,7 +749,7 @@ class Replay_Sim:
 
         # EXPLORE MAZE
         ts = 0  # initialize number of time-steps
-        print('Starting a new simulation (exploring the environment); strategy: {}'.format(self.replay_strategy))
+        print('\nStarting a new simulation (exploring the environment); strategy: {}'.format(self.replay_strategy))
         start_time = time.perf_counter()  # start timer/counter
         for tsi in range(self.params.MAX_N_STEPS):
             # Display progress
@@ -828,7 +828,7 @@ class Replay_Sim:
                     if self.num_episodes == np.ceil(self.params.MAX_N_EPISODES / 2):
                         self.last_tsi_at_goal_1 = tsi
                         self.this_goal = self.params.s_end_change
-                        print("\nGoal location changed\n")
+                        print("\nGoal location changed")
                     # the next episode means that the agent found the new goal; record this
                     if self.num_episodes == self.params.MAX_N_EPISODES / 2 + 1:
                         self.first_tsi_at_goal_2 = tsi

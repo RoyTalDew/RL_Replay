@@ -1,4 +1,6 @@
 from structClass import structType
+import numpy as np
+
 
 def setParams():
 
@@ -7,7 +9,7 @@ def setParams():
     # SIMULATION PARAMETERS
 
     params.N_SIMULATIONS = 30  # number of times to run the simulation
-    params.MAX_N_STEPS = int(1e5)  # maximum number of steps to simulate
+    params.MAX_N_STEPS = int(1e7)  # maximum number of steps to simulate
     params.MAX_N_EPISODES = 40  # maximum number of episodes to simulate (use np.inf if no max)
 
     # MDP PARAMETERS

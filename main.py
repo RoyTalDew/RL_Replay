@@ -4,6 +4,7 @@ import time
 import pickle
 import scipy
 import matplotlib.pyplot as plt
+import os
 
 class Replay_Sim:
 
@@ -16,11 +17,11 @@ class Replay_Sim:
     Mattar's paper is available here: https://www.nature.com/articles/s41593-018-0232-z
     """
 
-    def __init__(self, params, replay_strategy, sim_i=''):
+    def __init__(self, params, replay_strategy, maze, sim_i=''):
         """
         params: simulation parameters
         replay_strategy = 'prioritized_sweeping', 'EVB', 'no_replay', 'dyna', 'gain_only' or 'need_only'
-        sim_i: index in simulation loop
+        sim_i: index i\n simulation loop
         """
         acceptable_replay_strategies = ['prioritized_sweeping', 'EVB', 'no_replay', 'dyna', 'gain_only', 'need_only']
         assert replay_strategy in acceptable_replay_strategies, "'{}' is not an acceptable replay strategy, " \
@@ -35,6 +36,10 @@ class Replay_Sim:
                 self.params_dict[key] = self.params.__dict__[key]
         self.replay_strategy = replay_strategy
         self.sim_i = str(sim_i)
+        self.maze = maze
+        # make directory for this maze
+        if maze not in os.listdir('checkpoints/'):
+            os.mkdir(os.path.join('checkpoints', maze))
 
         side_ii, side_jj = params.maze.shape  # get the initial maze dimensions
         self.side_ii = side_ii
@@ -74,14 +79,12 @@ class Replay_Sim:
                        'EVM': np.full((self.params.MAX_N_STEPS, self.params.nPlan), np.nan),
                        'TD': np.full((self.params.MAX_N_STEPS, self.params.nPlan), np.nan)}
 
-    def save(self, name=None):
-        if name is None:
-            name = self.replay_strategy
-        with open('checkpoints/' + name + self.sim_i + '.pkl', 'wb') as f:
+    def save(self):
+        with open('checkpoints/' + self.maze + '/' + self.replay_strategy + self.sim_i + '.pkl', 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
     def load(self):
-        with open('checkpoints/' + self.replay_strategy + '.pkl', 'rb') as f:
+        with open('checkpoints/' + self.maze + '/' + self.replay_strategy + '.pkl', 'rb') as f:
             return pickle.load(f)
 
     def plot_agent(self, st):
@@ -150,7 +153,6 @@ class Replay_Sim:
         if stp1[1] > self.side_jj - 1:
             stp1[1] = self.side_jj - 1
 
-        # if this transition leads to a wall, no transition takes place
         if self.params.maze[stp1[0], stp1[1]] == 1:
             stp1 = st
 
@@ -158,6 +160,11 @@ class Replay_Sim:
         stp1i = np.ravel_multi_index(stp1, [self.side_ii, self.side_jj])
 
         # COLLECT REWARD
+
+        if isinstance(stp1, np.ndarray):  # make sure that stp1 is a list
+            stp1 = stp1.tolist()
+
+        # if this transition leads to a wall, no transition takes place
 
         if stp1 in self.this_goal.tolist():  # if the successor state is a goal state
             # if there's a different reward for each goal state:
@@ -818,7 +825,7 @@ class Replay_Sim:
                 self.num_episodes += 1  # Record that we got to the end
                 if self.params.change_goal:
                     # halfway through the experiment, change the goal location:
-                    if self.num_episodes == self.params.MAX_N_EPISODES / 2:
+                    if self.num_episodes == np.ceil(self.params.MAX_N_EPISODES / 2):
                         self.last_tsi_at_goal_1 = tsi
                         self.this_goal = self.params.s_end_change
                         print("\nGoal location changed\n")
@@ -851,11 +858,12 @@ class Replay_Sim:
             # If max number of episodes is reached, trim down simData.replay
             if self.num_episodes == self.params.MAX_N_EPISODES:
                 self.num_episodes_arr = self.num_episodes_arr[0:tsi + 1]
-                self.replay['state'][tsi] = self.replay['state'][tsi][0:tsi + 1]
-                self.replay['action'][tsi] = self.replay['action'][tsi][0:tsi + 1]
-                self.replay['gain'][tsi] = self.replay['gain'][tsi][0:tsi + 1]
-                self.replay['need'][tsi] = self.replay['need'][tsi][0:tsi + 1]
-                self.replay['EVM'][tsi] = self.replay['EVM'][tsi][0:tsi + 1]
+                self.replay['state'] = self.replay['state'][0:tsi + 1]
+                self.replay['action'] = self.replay['action'][0:tsi + 1]
+                self.replay['gain'] = self.replay['gain'][0:tsi + 1]
+                self.replay['need'] = self.replay['need'][0:tsi + 1]
+                self.replay['EVM'] = self.replay['EVM'][0:tsi + 1]
+                self.replay['TD'] = self.replay['TD'][0:tsi + 1]
                 msg = 'END OF SIMULATION\n{} steps; {} episodes'.format(tsi, self.num_episodes)
                 print('\r', msg, end='')
                 break

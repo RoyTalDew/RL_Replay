@@ -6,8 +6,8 @@ import scipy
 import matplotlib.pyplot as plt
 import os
 
-class Replay_Sim:
 
+class Replay_Sim:
     """
     Replay_Sim: Replay simulation on a grid-world.
     params = Structure with all of the simulation parameters

@@ -5,23 +5,14 @@ import numpy as np
 
 models_dict = {
     'prioritized_sweeping': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
+    'EVB': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': False},
     'dyna': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
     'no_replay': {'n_plan': 0, 'set_gain_to_one': True, 'set_need_to_one': True},
-    'EVB': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': False},
     'gain_only': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': True},
     'need_only': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': False}
 }
 
-maze_dict = {'mattar': {
-    'size': (6, 9),
-    'walls': [[slice(1, 4), 2], [slice(0, 3), 7], [4, 5]],
-    'start_state': np.array([[2, 0]]),
-    'goal_state.s_1': np.array([[0, 8]]),
-    'goal_state.s_2': np.array([[5, 0]]),
-    'reward_magnitude.s': np.array([[1]]),
-    'reward_std.s': np.array([[0.1]]),
-    'reward_prob.s': np.array([[1]])
-}, 'mattar_open': {
+maze_dict = {'mattar_open': {
     'size': (6, 9),
     'walls': [[5, slice(2, 9)], [0, slice(0, 5)],
               [slice(3, 5), 8]],
@@ -79,6 +70,73 @@ maze_dict = {'mattar': {
     'reward_prob.s': np.array([[1]])
 }}
 
+# maze_dict = {'mattar': {
+#     'size': (6, 9),
+#     'walls': [[slice(1, 4), 2], [slice(0, 3), 7], [4, 5]],
+#     'start_state': np.array([[2, 0]]),
+#     'goal_state.s_1': np.array([[0, 8]]),
+#     'goal_state.s_2': np.array([[5, 0]]),
+#     'reward_magnitude.s': np.array([[1]]),
+#     'reward_std.s': np.array([[0.1]]),
+#     'reward_prob.s': np.array([[1]])
+# }, 'mattar_open': {
+#     'size': (6, 9),
+#     'walls': [[5, slice(2, 9)], [0, slice(0, 5)],
+#               [slice(3, 5), 8]],
+#     'start_state': np.array([[2, 0]]),
+#     'goal_state.s_1': np.array([[0, 8]]),
+#     'goal_state.s_2': np.array([[5, 0]]),
+#     'reward_magnitude.s': np.array([[1]]),
+#     'reward_std.s': np.array([[0.1]]),
+#     'reward_prob.s': np.array([[1]])
+# }, 'mattar_constrained': {
+#     'size': (6, 9),
+#     'walls': [[slice(1, 4), 2], [slice(0, 5), 7], [slice(2, 5), 5],
+#               [1, 3], [4, 4], [3, 1]],
+#     'start_state': np.array([[2, 0]]),
+#     'goal_state.s_1': np.array([[0, 8]]),
+#     'goal_state.s_2': np.array([[5, 0]]),
+#     'reward_magnitude.s': np.array([[1]]),
+#     'reward_std.s': np.array([[0.1]]),
+#     'reward_prob.s': np.array([[1]])
+# }, 'large_open': {
+#     'size': (20, 30),
+#     'walls': [[slice(1, 4), 2], [slice(0, 2), 4], [4, 5],
+#               [3, 4], [3, slice(7, 9)], [4, 1], [slice(9, 15), 12],
+#               [slice(17, 20), 14], [12, 13], [8, 25], [13, slice(17, 19)],
+#               [4, 11], [slice(11, 14), 12], [slice(5, 7), 24], [14, 25],
+#               [13, 24], [13, slice(27, 29)], [14, 21], [slice(6, 20), 0],
+#               [19, slice(0, 30)], [slice(0, 20), 29], [0, slice(4, 30)],
+#               [slice(14, 20), 1], [18, slice(1, 6)], [17, slice(1, 5)],
+#               [16, slice(1, 4)], [slice(15, 19), 2], [4, 1], [18, 28],
+#               [1, 28]
+#               ],
+#     'start_state': np.array([[10, 1]]),
+#     'goal_state.s_1': np.array([[2, 28]]),
+#     'goal_state.s_2': np.array([[0, 2]]),
+#     'reward_magnitude.s': np.array([[1]]),
+#     'reward_std.s': np.array([[0.1]]),
+#     'reward_prob.s': np.array([[1]])
+# }, 'large_constrained': {
+#     'size': (20, 30),
+#     'walls': [[slice(0, 15), 27], [slice(10, 21), 24],
+#               [slice(2, 15), 21], [slice(10, 21), 18],
+#               [slice(2, 18), 15], [10, slice(10, 16)],
+#               [slice(14, 21), 11], [slice(0, 7), 7],
+#               [15, slice(0, 6)], [7, slice(5, 9)],
+#               [slice(17, 19), slice(3, 5)], [slice(2, 12), 2],
+#               [slice(7, 10), 8], [slice(2, 8), 11], [slice(12, 18), 8],
+#               [12, slice(6, 8)], [slice(14, 21), 11], [14, slice(12, 14)],
+#               [17, 14], [5, slice(16, 21)], [2, 18], [2, 24], [19, 0]
+#               ],
+#     'start_state': np.array([[10, 1]]),
+#     'goal_state.s_1': np.array([[2, 28]]),
+#     'goal_state.s_2': np.array([[0, 2]]),
+#     'reward_magnitude.s': np.array([[1]]),
+#     'reward_std.s': np.array([[0.1]]),
+#     'reward_prob.s': np.array([[1]])
+# }}
+
 params = setParams()
 
 # iterate over each maze (different environment topologies, single/double reward)
@@ -94,14 +152,13 @@ for maze in maze_dict:
     for wall in walls:
         params.maze[wall[0], wall[1]] = 1
     # starting state of the agent (in matrix notation)
-    # import matplotlib.pyplot as plt
-    # params.maze[maze_dict[maze]['start_state'][0][0], maze_dict[maze]['start_state'][0][1]] = 0.1
-    # params.maze[maze_dict[maze]['goal_state.s_1'][0][0], maze_dict[maze]['goal_state.s_1'][0][1]] = 0.2
-    # params.maze[maze_dict[maze]['goal_state.s_2'][0][0], maze_dict[maze]['goal_state.s_2'][0][1]] = 0.8
-    # plt.imshow(params.maze)
     params.s_start = maze_dict[maze]['start_state']
     # set random starting point to True or False
-    params.s_start_rand = False  # start at random locations after reaching goal
+    params.s_start_rand = True
+    # choose policy ('e_greedy' or 'softmax')
+    params.actPolicy = 'e_greedy'
+    # set probability of a random action(epsilon - greedy)
+    params.epsilon = 0.05
     # goal state(s) (in matrix notation)
     params.s_end = maze_dict[maze]['goal_state.s_1']
     params.s_end_change = maze_dict[maze]['goal_state.s_2']

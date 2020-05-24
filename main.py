@@ -99,53 +99,6 @@ class Replay_Sim:
                 }
         self.performance_df = pd.DataFrame(data)
 
-        # self.full_time_per_episode = np.full(self.params.MAX_N_EPISODES, np.nan)  # MAKE SURE CORRECT FOR EACH MODEL
-        # self.times_for_planning = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.times_for_gain = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.times_for_need = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.times_for_EVB = np.full((self.params.MAX_N_EPISODES, self.params.nPlan), np.nan)
-        # self.times_for_PS_prep = np.full((self.params.MAX_N_EPISODES, self.params.nPlan), np.nan)
-        # data = {'n_plan_phases': np.full(self.params.MAX_N_EPISODES, np.nan),
-        #         'total_plan_times': np.full(self.params.MAX_N_EPISODES, np.nan),
-        #         'gain_times': np.full(self.params.MAX_N_EPISODES, np.nan),
-        #         'need_times': np.full(self.params.MAX_N_EPISODES, np.nan),
-        #         'EVB_times': np.full(self.params.MAX_N_EPISODES, np.nan),
-        #         'PS_prep_times': np.full(self.params.MAX_N_EPISODES, np.nan)
-        #         }
-        # # cols = ['n_plan_phases', 'total_plan_times', 'gain_times', 'need_times', 'EVB_times', 'PS_prep_times']
-        # idx = ['goal_1', 'goal_2', 'goal_1_to_s', 'goal_2_to_2']
-        # pd.DataFrame(data, index=idx)
-        #
-        # self.plan_phases_g1 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.plan_phases_g2 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.plan_phases_g1_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.plan_phases_g2_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        #
-        # self.plan_times_g1 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.plan_times_g2 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.plan_times_g1_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.plan_times_g2_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        #
-        # self.gain_times_g1 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.gain_times_g2 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.gain_times_g1_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.gain_times_g2_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        #
-        # self.need_times_g1 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.need_times_g2 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.need_times_g1_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.need_times_g2_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        #
-        # self.EVB_times_g1 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.EVB_times_g2 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.EVB_times_g1_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.EVB_times_g2_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        #
-        # self.PS_prep_times_g1 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.PS_prep_times_g2 = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.PS_prep_times_g1_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-        # self.PS_prep_times_g2_to_s = np.full(self.params.MAX_N_EPISODES, np.nan)
-
         self.num_episodes = 0  # <- keep track of how many times we reach the end of our maze
         self.num_episodes_arr = np.empty((self.params.MAX_N_STEPS, 1))
 
@@ -522,8 +475,7 @@ class Replay_Sim:
 
             if not (curr_step_is_goal or last_step_was_goal or curr_step_is_old_goal or last_step_was_old_goal):
                 p = np.Inf  # Otherwise, no planning
-            else:
-                print('planning')
+
         if rew == 0 and self.num_episodes == 0:
             p = np.Inf  # Skip planning before the first reward is encountered
 
@@ -812,197 +764,6 @@ class Replay_Sim:
             self.update_performance_df(plan_start_time, p, times_for_PS_prep, times_for_EVB, times_for_gain,
                                        times_for_need)
 
-            # check which transition it was, so that the data can be saved in the corresponding array
-            # curr_step_is_g1 = self.check_if_goal_step('curr', 'first_goal')
-            # curr_step_is_g2 = self.check_if_goal_step('curr', 'second_goal')
-            # curr_step_is_g1_to_s = self.check_if_goal_step('prev', 'first_goal')
-            # curr_step_is_g2_to_s = self.check_if_goal_step('prev', 'second_goal')
-            #
-            # if curr_step_is_g1:
-
-            # # planning times (CHANGE IFS TO ELIFS)
-            # if curr_step_is_g1:
-            #     if np.isnan(self.performance_df['plan_times_g1'][self.num_episodes]):
-            #         self.performance_df['plan_times_g1'][self.num_episodes] = 0
-            #     self.performance_df['plan_times_g1'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     if np.isnan(self.performance_df['n_plan_phases_g1'][self.num_episodes]):
-            #         self.performance_df['n_plan_phases_g1'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_phases_g1'][self.num_episodes] += 1
-            #     if np.isnan(self.performance_df['n_plan_steps_g1'][self.num_episodes]):
-            #         self.performance_df['n_plan_steps_g1'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_steps_g1'][self.num_episodes] += p
-            #
-            #     # PS
-            #     if self.replay_strategy == 'prioritized sweeping':
-            #         if np.isnan(self.performance_df['PS_prep_times_g1'][self.num_episodes]):
-            #             self.performance_df['PS_prep_times_g1'][self.num_episodes] = 0
-            #         self.performance_df['PS_prep_times_g1'][self.num_episodes] += times_for_PS_prep
-            #     if self.replay_strategy in ['EVB', 'gain_only', 'need_only', 'dyna']:
-            #         if np.isnan(self.performance_df['EVB_times_g1'][self.num_episodes]):
-            #             self.performance_df['EVB_times_g1'][self.num_episodes] = 0
-            #         self.performance_df['EVB_times_g1'][self.num_episodes] += times_for_EVB
-            #     if self.replay_strategy in ['EVB', 'gain_only']:
-            #         if np.isnan(self.performance_df['gain_times_g1'][self.num_episodes]):
-            #             self.performance_df['gain_times_g1'][self.num_episodes] = 0
-            #         self.performance_df['gain_times_g1'][self.num_episodes] += times_for_gain
-            #     if self.replay_strategy in ['EVB', 'need_only']:
-            #         if np.isnan(self.performance_df['need_times_g1'][self.num_episodes]):
-            #             self.performance_df['need_times_g1'][self.num_episodes] = 0
-            #         self.performance_df['need_times_g1'][self.num_episodes] += times_for_need
-            #
-            # if curr_step_is_g2:
-            #     if np.isnan(self.performance_df['plan_times_g2'][self.num_episodes]):
-            #         self.performance_df['plan_times_g2'][self.num_episodes] = 0
-            #     self.performance_df['plan_times_g2'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     if np.isnan(self.performance_df['n_plan_phases_g2'][self.num_episodes]):
-            #         self.performance_df['n_plan_phases_g2'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_phases_g2'][self.num_episodes] += 1
-            #     if np.isnan(self.performance_df['n_plan_steps_g2'][self.num_episodes]):
-            #         self.performance_df['n_plan_steps_g2'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_steps_g2'][self.num_episodes] += p
-            #
-            #     # PS
-            #     if self.replay_strategy == 'prioritized sweeping':
-            #         if np.isnan(self.performance_df['PS_prep_times_g2'][self.num_episodes]):
-            #             self.performance_df['PS_prep_times_g2'][self.num_episodes] = 0
-            #         self.performance_df['PS_prep_times_g2'][self.num_episodes] += times_for_PS_prep
-            #     if self.replay_strategy in ['EVB', 'gain_only', 'need_only', 'dyna']:
-            #         if np.isnan(self.performance_df['EVB_times_g2'][self.num_episodes]):
-            #             self.performance_df['EVB_times_g2'][self.num_episodes] = 0
-            #         self.performance_df['EVB_times_g2'][self.num_episodes] += times_for_EVB
-            #     if self.replay_strategy in ['EVB', 'gain_only']:
-            #         if np.isnan(self.performance_df['gain_times_g2'][self.num_episodes]):
-            #             self.performance_df['gain_times_g2'][self.num_episodes] = 0
-            #         self.performance_df['gain_times_g2'][self.num_episodes] += times_for_gain
-            #     if self.replay_strategy in ['EVB', 'need_only']:
-            #         if np.isnan(self.performance_df['need_times_g2'][self.num_episodes]):
-            #             self.performance_df['need_times_g2'][self.num_episodes] = 0
-            #         self.performance_df['need_times_g2'][self.num_episodes] += times_for_need
-            #
-            # if curr_step_is_g1_to_s:
-            #     if np.isnan(self.performance_df['plan_times_g1_to_s'][self.num_episodes]):
-            #         self.performance_df['plan_times_g1_to_s'][self.num_episodes] = 0
-            #     self.performance_df['plan_times_g1_to_s'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     if np.isnan(self.performance_df['n_plan_phases_g1_to_s'][self.num_episodes]):
-            #         self.performance_df['n_plan_phases_g1_to_s'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_phases_g1_to_s'][self.num_episodes] += 1
-            #     if np.isnan(self.performance_df['n_plan_steps_g1_to_s'][self.num_episodes]):
-            #         self.performance_df['n_plan_steps_g1_to_s'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_steps_g1_to_s'][self.num_episodes] += p
-            #
-            #     # PS
-            #     if self.replay_strategy == 'prioritized sweeping':
-            #         if np.isnan(self.performance_df['PS_prep_times_g1_to_s'][self.num_episodes]):
-            #             self.performance_df['PS_prep_times_g1_to_s'][self.num_episodes] = 0
-            #         self.performance_df['PS_prep_times_g1_to_s'][self.num_episodes] += times_for_PS_prep
-            #     if self.replay_strategy in ['EVB', 'gain_only', 'need_only', 'dyna']:
-            #         if np.isnan(self.performance_df['EVB_times_g1_to_s'][self.num_episodes]):
-            #             self.performance_df['EVB_times_g1_to_s'][self.num_episodes] = 0
-            #         self.performance_df['EVB_times_g1_to_s'][self.num_episodes] += times_for_EVB
-            #     if self.replay_strategy in ['EVB', 'gain_only']:
-            #         if np.isnan(self.performance_df['gain_times_g1_to_s'][self.num_episodes]):
-            #             self.performance_df['gain_times_g1_to_s'][self.num_episodes] = 0
-            #         self.performance_df['gain_times_g1_to_s'][self.num_episodes] += times_for_gain
-            #     if self.replay_strategy in ['EVB', 'need_only']:
-            #         if np.isnan(self.performance_df['need_times_g1_to_s'][self.num_episodes]):
-            #             self.performance_df['need_times_g1_to_s'][self.num_episodes] = 0
-            #         self.performance_df['need_times_g1_to_s'][self.num_episodes] += times_for_need
-            #
-            # if curr_step_is_g2_to_s:
-            #     if np.isnan(self.performance_df['plan_times_g2_to_s'][self.num_episodes]):
-            #         self.performance_df['plan_times_g2_to_s'][self.num_episodes] = 0
-            #     self.performance_df['plan_times_g2_to_s'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     if np.isnan(self.performance_df['n_plan_phases_g2_to_s'][self.num_episodes]):
-            #         self.performance_df['n_plan_phases_g2_to_s'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_phases_g2_to_s'][self.num_episodes] += 1
-            #     if np.isnan(self.performance_df['n_plan_steps_g2_to_s'][self.num_episodes]):
-            #         self.performance_df['n_plan_steps_g2_to_s'][self.num_episodes] = 0
-            #     self.performance_df['n_plan_steps_g2_to_s'][self.num_episodes] += p
-            #
-            #     # PS
-            #     if self.replay_strategy == 'prioritized sweeping':
-            #         if np.isnan(self.performance_df['PS_prep_times_g2_to_s'][self.num_episodes]):
-            #             self.performance_df['PS_prep_times_g2_to_s'][self.num_episodes] = 0
-            #         self.performance_df['PS_prep_times_g2_to_s'][self.num_episodes] += times_for_PS_prep
-            #     if self.replay_strategy in ['EVB', 'gain_only', 'need_only', 'dyna']:
-            #         if np.isnan(self.performance_df['EVB_times_g2_to_s'][self.num_episodes]):
-            #             self.performance_df['EVB_times_g2_to_s'][self.num_episodes] = 0
-            #         self.performance_df['EVB_times_g2_to_s'][self.num_episodes] += times_for_EVB
-            #     if self.replay_strategy in ['EVB', 'gain_only']:
-            #         if np.isnan(self.performance_df['gain_times_g2_to_s'][self.num_episodes]):
-            #             self.performance_df['gain_times_g2_to_s'][self.num_episodes] = 0
-            #         self.performance_df['gain_times_g2_to_s'][self.num_episodes] += times_for_gain
-            #     if self.replay_strategy in ['EVB', 'need_only']:
-            #         if np.isnan(self.performance_df['need_times_g2_to_s'][self.num_episodes]):
-            #             self.performance_df['need_times_g2_to_s'][self.num_episodes] = 0
-            #         self.performance_df['need_times_g2_to_s'][self.num_episodes] += times_for_need
-            #
-            #
-            #
-            #
-            #
-            #
-            # if curr_step_is_g2:  # CHANGE TO ELIFS
-            #     self.performance_df['plan_times_g2'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     self.performance_df['n_plan_phases_g2'][self.num_episodes] += 1
-            #     self.performance_df['n_plan_steps_g2'][self.num_episodes] += p
-            # if curr_step_is_g1_to_s:
-            #     self.performance_df['plan_times_g1_to_s'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     self.performance_df['n_plan_phases_g1_to_s'][self.num_episodes] += 1
-            #     self.performance_df['n_plan_steps_g1_to_s'][self.num_episodes] += p
-            # if curr_step_is_g2_to_s:  # CHANGE TO ELIFS
-            #     self.performance_df['plan_times_g2_to_s'][self.num_episodes] += time.perf_counter() - plan_start_time
-            #     self.performance_df['n_plan_phases_g2_to_s'][self.num_episodes] += 1
-            #     self.performance_df['n_plan_steps_g2_to_s'][self.num_episodes] += p
-            #
-            # # prioritized sweeping preparation times
-            # if curr_step_is_g1 and self.replay_strategy == 'prioritized sweeping':
-            #     if np.isnan(self.performance_df['PS_prep_times_g1'][self.num_episodes]):
-            #         self.performance_df['PS_prep_times_g1'][self.num_episodes] = 0
-            #     self.performance_df['PS_prep_times_g1'][self.num_episodes] += times_for_PS_prep
-            # if curr_step_is_g2 and self.replay_strategy == 'prioritized sweeping':  # CHANGE TO ELIFS
-            #     if np.isnan(self.performance_df['PS_prep_times_g2'][self.num_episodes]):
-            #         self.performance_df['PS_prep_times_g2'][self.num_episodes] = 0
-            #     self.performance_df['PS_prep_times_g2'][self.num_episodes] += times_for_PS_prep
-            # if curr_step_is_g1_to_s and self.replay_strategy == 'prioritized sweeping':
-            #     if np.isnan(self.performance_df['PS_prep_times_g1_to_s'][self.num_episodes]):
-            #         self.performance_df['PS_prep_times_g1_to_s'][self.num_episodes] = 0
-            #     self.performance_df['PS_prep_times_g1_to_s'][self.num_episodes] += times_for_PS_prep
-            # if curr_step_is_g2_to_s and self.replay_strategy == 'prioritized sweeping':  # CHANGE TO ELIFS
-            #     if np.isnan(self.performance_df['PS_prep_times_g2_to_s'][self.num_episodes]):
-            #         self.performance_df['PS_prep_times_g2_to_s'][self.num_episodes] = 0
-            #     self.performance_df['PS_prep_times_g2_to_s'][self.num_episodes] += times_for_PS_prep
-            #
-            # # EVB update times
-            # if curr_step_is_g1 and self.replay_strategy in ['EVB', 'gain_only', 'need_only', 'dyna']:
-            #     if np.isnan(self.performance_df['EVB_times_g1'][self.num_episodes]):
-            #         self.performance_df['EVB_times_g1'][self.num_episodes] = 0
-            #     self.performance_df['EVB_times_g1'][self.num_episodes] += times_for_EVB
-            #
-            # if curr_step_is_g2 and self.replay_strategy in ['EVB', 'gain_only', 'need_only', 'dyna']:
-            #     if np.isnan(self.performance_df['EVB_times_g2'][self.num_episodes]):
-            #         self.performance_df['EVB_times_g2'][self.num_episodes] = 0
-            #     self.performance_df['EVB_times_g2'][self.num_episodes] += times_for_EVB
-            #
-            #
-            #
-            #     self.performance_df['gain_times_g1'][self.num_episodes] += times_for_gain
-            #     self.performance_df['need_times_g1'][self.num_episodes] += times_for_need
-            #
-            #
-
-            # curr_step_is_new_goal = self.exp_arr_full[-1, 3] in np.ravel_multi_index(
-            #     [self.second_goal[:, 0], self.second_goal[:, 1]], [self.side_ii, self.side_jj])
-            # last_step_was_new_goal = np.any(np.isin([self.exp_arr_full[-2, 3], self.exp_arr_full[-2, 0]],
-            #                                         np.ravel_multi_index(
-            #                                             [self.second_goal[:, 0], self.second_goal[:, 1]],
-            #                                             [self.side_ii, self.side_jj])))
-
-            # if curr_step_is_goal:
-            # elif las:
-            # self.performance_df['plan_times'][self.num_episodes] = time.perf_counter() - plan_start_time
-            # self.times_for_planning[self.num_episodes] = time.perf_counter() - plan_start_time
-
         return backups_gain, backups_need, backups_EVM, backups_TD, planning_backups
 
     def update_performance_df(self, plan_start_time, p, times_for_PS_prep, times_for_EVB, times_for_gain,
@@ -1143,17 +904,14 @@ class Replay_Sim:
             if st in self.this_goal.tolist():  # Agent is at a terminal state
                 if self.params.s_start_rand:
                     # Pick next start state at random
-                    stp1 = [None, None]
-                    valid_states = self.get_valid_states()
-                    stp1i = valid_states[np.random.randint(len(valid_states))]
-                    # Convert state index to (i,j):
-                    stp1[0], stp1[1] = np.unravel_index(stp1i, [self.side_ii, self.side_jj])
+                    stp1, stp1i = self.get_starting_state()
                 else:
                     # Determine which of the possible start states to use
                     goal_num = np.argwhere(np.all(np.isin(self.this_goal, st), axis=0))[0][0]
                     startnum = goal_num % self.params.s_start.shape[0]
                     stp1 = self.params.s_start[startnum]
                     stp1i = np.ravel_multi_index(stp1, [self.side_ii, self.side_jj])
+                    self.this_starting_state_i = stp1i
 
                 # Update transition matrix and list of experiences
                 if self.params.Tgoal2start:

@@ -30,7 +30,7 @@ class Sim_Data:
                         print(key, ': ', params_dict[key])
         return model_data, params_dict
 
-    def plot_fig(self, dependent_var, y_label=None, title=None, log_values=False):
+    def plot_fig(self, dependent_var, y_label=None, title=None, log_values=False, crop_y=False):
         fig = plt.figure()
         fig_title = '{} maze: '.format(self.maze).replace("_", " ").title() + title
         if y_label is None:
@@ -40,6 +40,8 @@ class Sim_Data:
             fig_title += ' (log)'
         plt.title(fig_title)
         plt.ylabel(y_label)
+        if crop_y and not log_values:
+            plt.ylim(0, 200)
         plt.xlabel('# Episodes')
         plt.xticks(np.arange(0, self.params_dict['MAX_N_EPISODES'] + 1, 5))
         plt.xlim(1, self.params_dict['MAX_N_EPISODES'])
@@ -50,23 +52,22 @@ class Sim_Data:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             for model in self.models:
-                dependent_var_dict[model] = np.empty((self.params_dict['N_SIMULATIONS'], self.params_dict['MAX_N_EPISODES']))
+                dependent_var_dict[model] = np.empty(
+                    (self.params_dict['N_SIMULATIONS'], self.params_dict['MAX_N_EPISODES']))
                 for k in range(self.params_dict['N_SIMULATIONS']):
-                    if dependent_var == 'steps_per_episode':
-                        dependent_var_dict[model][k] = self.model_data[model][k].steps_per_episode
-                    elif dependent_var == 'total_time_per_episode':
-                        dependent_var_dict[model][k] = self.model_data[model][k].full_time_per_episode
-                    elif dependent_var == 'plan_time_per_episode':
-                        dependent_var_dict[model][k] = self.model_data[model][k].times_for_planning
-                    elif dependent_var == 'EVB_time_per_episode':
-                        dependent_var_dict[model][k] = np.nanmean(self.model_data[model][k].times_for_EVB, axis=1)
-                    elif dependent_var == 'gain_time_per_episode':
-                        dependent_var_dict[model][k] = np.nanmean(self.model_data[model][k].times_for_gain, axis=1)
-                    elif dependent_var == 'need_time_per_episode':
-                        dependent_var_dict[model][k] = np.nanmean(self.model_data[model][k].times_for_need, axis=1)
+                    if dependent_var in ['steps_per_episode', 'full_time_per_episode']:
+                        dependent_var_dict[model][k] = self.model_data[model][k].performance_df[dependent_var]
+                    else:
+                        transitions = ['_g1', '_g2', '_g1_to_s', '_g2_to_s']
+                        dependent_var_dict[model][k] = np.zeros(self.params_dict['MAX_N_EPISODES'])
+                        for tr in transitions:
+                            this_var = dependent_var + tr
+                            dependent_var_dict[model][k] = np.nansum(np.dstack(
+                                (dependent_var_dict[model][k], self.model_data[model][k].performance_df[this_var])), 2)
                 if log_values:
                     means = np.nanmean(np.log(dependent_var_dict[model]), axis=0)
-                    stds = np.std(np.log(dependent_var_dict[model]), axis=0) / np.sqrt(self.params_dict['N_SIMULATIONS'])
+                    stds = np.std(np.log(dependent_var_dict[model]), axis=0) / np.sqrt(
+                        self.params_dict['N_SIMULATIONS'])
                 else:
                     means = np.nanmean(dependent_var_dict[model], axis=0)
                     stds = np.std(dependent_var_dict[model], axis=0) / np.sqrt(self.params_dict['N_SIMULATIONS'])

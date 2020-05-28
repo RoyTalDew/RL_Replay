@@ -1,7 +1,8 @@
 from parameters import setParams
 from main import Replay_Sim
 import numpy as np
-
+import glob
+import os
 
 models_dict = {
     'prioritized_sweeping': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
@@ -12,27 +13,7 @@ models_dict = {
     'need_only': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': False}
 }
 
-maze_dict = {'mattar_open': {
-    'size': (6, 9),
-    'walls': [[5, slice(2, 9)], [0, slice(0, 5)],
-              [slice(3, 5), 8]],
-    'start_state': np.array([[2, 0]]),
-    'goal_state.s_1': np.array([[0, 8]]),
-    'goal_state.s_2': np.array([[5, 0]]),
-    'reward_magnitude.s': np.array([[1]]),
-    'reward_std.s': np.array([[0.1]]),
-    'reward_prob.s': np.array([[1]])
-}, 'mattar_constrained': {
-    'size': (6, 9),
-    'walls': [[slice(1, 4), 2], [slice(0, 5), 7], [slice(2, 5), 5],
-              [1, 3], [4, 4], [3, 1]],
-    'start_state': np.array([[2, 0]]),
-    'goal_state.s_1': np.array([[0, 8]]),
-    'goal_state.s_2': np.array([[5, 0]]),
-    'reward_magnitude.s': np.array([[1]]),
-    'reward_std.s': np.array([[0.1]]),
-    'reward_prob.s': np.array([[1]])
-}, 'large_open': {
+maze_dict = {'large_open': {
     'size': (20, 30),
     'walls': [[slice(1, 4), 2], [slice(0, 2), 4], [4, 5],
               [3, 4], [3, slice(7, 9)], [4, 1], [slice(9, 15), 12],
@@ -178,7 +159,10 @@ for maze in maze_dict:
         params.setAllNeedToOne = models_dict[model]['set_need_to_one']
 
         # loop over each model and maze for multiple simulation
-        for k in range(0, params.N_SIMULATIONS):  # CHANGE FROM 8 TO NOTHING
+        file_list = [file for file in glob.glob(os.path.join('checkpoints', maze, model + '*'))]
+        # loop over each model and maze for multiple simulation (that are not already saved as a chekpoint)
+        for k in range(len(file_list), params.N_SIMULATIONS):
+            print("Simulation number: ", k)
             np.random.seed()
             ReplayModel = Replay_Sim(params, model, maze, sim_i=k)
             # pre-explore the environment/maze
@@ -189,5 +173,6 @@ for maze in maze_dict:
             ReplayModel.explore_env()
             # save simulation
             ReplayModel.save()
+            del ReplayModel
             progress = "\nDone with {} simulation #{} out of #{}".format(model, str(k + 1), str(params.N_SIMULATIONS))
             print(progress)

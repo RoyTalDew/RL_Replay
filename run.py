@@ -5,8 +5,8 @@ import glob
 import os
 
 models_dict = {
-    'prioritized_sweeping': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
     'EVB': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': False},
+    'prioritized_sweeping': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
     'dyna': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
     'no_replay': {'n_plan': 0, 'set_gain_to_one': True, 'set_need_to_one': True},
     'gain_only': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': True},
@@ -51,36 +51,7 @@ models_dict = {
 #     'reward_prob.s': np.array([[1]])
 # }}
 
-maze_dict = {'mattar': {
-    'size': (6, 9),
-    'walls': [[slice(1, 4), 2], [slice(0, 3), 7], [4, 5]],
-    'start_state': np.array([[2, 0]]),
-    'goal_state.s_1': np.array([[0, 8]]),
-    'goal_state.s_2': np.array([[5, 0]]),
-    'reward_magnitude.s': np.array([[1]]),
-    'reward_std.s': np.array([[0.1]]),
-    'reward_prob.s': np.array([[1]])
-}, 'mattar_open': {
-    'size': (6, 9),
-    'walls': [[5, slice(2, 9)], [0, slice(0, 5)],
-              [slice(3, 5), 8]],
-    'start_state': np.array([[2, 0]]),
-    'goal_state.s_1': np.array([[0, 8]]),
-    'goal_state.s_2': np.array([[5, 0]]),
-    'reward_magnitude.s': np.array([[1]]),
-    'reward_std.s': np.array([[0.1]]),
-    'reward_prob.s': np.array([[1]])
-}, 'mattar_constrained': {
-    'size': (6, 9),
-    'walls': [[slice(1, 4), 2], [slice(0, 5), 7], [slice(2, 5), 5],
-              [1, 3], [4, 4], [3, 1]],
-    'start_state': np.array([[2, 0]]),
-    'goal_state.s_1': np.array([[0, 8]]),
-    'goal_state.s_2': np.array([[5, 0]]),
-    'reward_magnitude.s': np.array([[1]]),
-    'reward_std.s': np.array([[0.1]]),
-    'reward_prob.s': np.array([[1]])
-}, 'large_open': {
+maze_dict = {'large_open': {
     'size': (20, 30),
     'walls': [[slice(1, 4), 2], [slice(0, 2), 4], [4, 5],
               [3, 4], [3, slice(7, 9)], [4, 1], [slice(9, 15), 12],
@@ -113,6 +84,35 @@ maze_dict = {'mattar': {
     'start_state': np.array([[10, 1]]),
     'goal_state.s_1': np.array([[2, 28]]),
     'goal_state.s_2': np.array([[0, 2]]),
+    'reward_magnitude.s': np.array([[1]]),
+    'reward_std.s': np.array([[0.1]]),
+    'reward_prob.s': np.array([[1]])
+}, 'mattar': {
+    'size': (6, 9),
+    'walls': [[slice(1, 4), 2], [slice(0, 3), 7], [4, 5]],
+    'start_state': np.array([[2, 0]]),
+    'goal_state.s_1': np.array([[0, 8]]),
+    'goal_state.s_2': np.array([[5, 0]]),
+    'reward_magnitude.s': np.array([[1]]),
+    'reward_std.s': np.array([[0.1]]),
+    'reward_prob.s': np.array([[1]])
+}, 'mattar_open': {
+    'size': (6, 9),
+    'walls': [[5, slice(2, 9)], [0, slice(0, 5)],
+              [slice(3, 5), 8]],
+    'start_state': np.array([[2, 0]]),
+    'goal_state.s_1': np.array([[0, 8]]),
+    'goal_state.s_2': np.array([[5, 0]]),
+    'reward_magnitude.s': np.array([[1]]),
+    'reward_std.s': np.array([[0.1]]),
+    'reward_prob.s': np.array([[1]])
+}, 'mattar_constrained': {
+    'size': (6, 9),
+    'walls': [[slice(1, 4), 2], [slice(0, 5), 7], [slice(2, 5), 5],
+              [1, 3], [4, 4], [3, 1]],
+    'start_state': np.array([[2, 0]]),
+    'goal_state.s_1': np.array([[0, 8]]),
+    'goal_state.s_2': np.array([[5, 0]]),
     'reward_magnitude.s': np.array([[1]]),
     'reward_std.s': np.array([[0.1]]),
     'reward_prob.s': np.array([[1]])

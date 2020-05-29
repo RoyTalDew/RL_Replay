@@ -35,8 +35,6 @@ maze_dict = {'large_open': {
 
 params = setParams()
 
-params.MAX_N_STEPS = int(2.5e6)
-
 # iterate over each maze (different environment topologies, single/double reward)
 
 np.random.seed(31415)
@@ -53,10 +51,12 @@ for maze in maze_dict:
     params.s_start = maze_dict[maze]['start_state']
     # set random starting point to True or False
     params.s_start_rand = True
+    params.MAX_N_STEPS = int(2.5e6)
+    params.plan_at_prev_goal = False
     # choose policy ('e_greedy' or 'softmax')
     params.actPolicy = 'e_greedy'
     # set probability of a random action(epsilon - greedy)
-    params.epsilon = 0.05
+    params.epsilon = 0.1
     # goal state(s) (in matrix notation)
     params.s_end = maze_dict[maze]['goal_state.s_1']
     params.s_end_change = maze_dict[maze]['goal_state.s_2']

@@ -79,7 +79,7 @@ for maze in maze_dict:
         file_list = [file for file in glob.glob(os.path.join('checkpoints', maze, model + '*'))]
         # loop over each model and maze for multiple simulation (that are not already saved as a chekpoint)
         for k in range(len(file_list), params.N_SIMULATIONS):
-            print("Simulation number: ", k)
+            print("Simulation number: ", k + 1)
             np.random.seed()
             ReplayModel = Replay_Sim(params, model, maze, sim_i=k)
             # pre-explore the environment/maze

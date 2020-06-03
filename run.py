@@ -5,12 +5,12 @@ import glob
 import os
 
 models_dict = {
-    'EVB': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': False},
     'prioritized_sweeping': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
     'dyna': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': True},
     'no_replay': {'n_plan': 0, 'set_gain_to_one': True, 'set_need_to_one': True},
+    'need_only': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': False},
     'gain_only': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': True},
-    'need_only': {'n_plan': 20, 'set_gain_to_one': True, 'set_need_to_one': False}
+    'EVB': {'n_plan': 20, 'set_gain_to_one': False, 'set_need_to_one': False}
 }
 
 maze_dict = {'large_open': {

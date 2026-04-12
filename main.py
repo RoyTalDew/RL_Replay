@@ -474,10 +474,10 @@ class Replay_Sim:
                     #                                             [self.side_ii, self.side_jj])))
 
             if not (curr_step_is_goal or last_step_was_goal or curr_step_is_old_goal or last_step_was_old_goal):
-                p = np.Inf  # Otherwise, no planning
+                p = np.inf  # Otherwise, no planning
 
         if rew == 0 and self.num_episodes == 0:
-            p = np.Inf  # Skip planning before the first reward is encountered
+            p = np.inf  # Skip planning before the first reward is encountered
 
         # Pre-allocate variables to store planning info
 
@@ -579,10 +579,10 @@ class Replay_Sim:
                 EVM = np.full((len(plan_exp)), np.nan)
                 for i in range(len(plan_exp)):
                     if len(plan_exp[i].shape) == 1:
-                        EVM[i] = need[i][-1] * max(gain[i], self.params.baselineGain)
+                        EVM[i] = need[i][-1] * max(float(gain[i][-1]), self.params.baselineGain)
                     elif len(plan_exp[i].shape) == 2:
                         EVM[i] = sum(
-                            need[i][-1] * np.repeat(max(gain[i].all(), self.params.baselineGain), len(gain[i])))
+                            need[i][-1] * np.repeat(max(float(np.nanmax(gain[i])), self.params.baselineGain), len(gain[i])))
                     else:
                         err_msg = 'plan_exp[i] does not have the correct shape. It is {} but should have a ' \
                                   'length equal to 1 or 2, e.g. (4,) or (2, 4)'.format(plan_exp[i].shape)
@@ -800,9 +800,9 @@ class Replay_Sim:
         for key in var_dict:
             val = var_dict[key]
             key += transition
-            if np.isnan(self.performance_df[key][self.num_episodes]):
-                self.performance_df[key][self.num_episodes] = 0
-            self.performance_df[key][self.num_episodes] += val
+            if np.isnan(self.performance_df.loc[self.num_episodes, key]):
+                self.performance_df.loc[self.num_episodes, key] = 0
+            self.performance_df.loc[self.num_episodes, key] += val
 
     def pre_explore_env(self):
         # initialize state indices as a 2-element list denoting the corresponding matrix subscripts (i,j):
@@ -926,9 +926,9 @@ class Replay_Sim:
                 sti = stp1i
                 # record elapsed time during episode + planning
                 stop_time = time.perf_counter()
-                self.performance_df['full_time_per_episode'][self.num_episodes] = stop_time - start_time
+                self.performance_df.loc[self.num_episodes, 'full_time_per_episode'] = stop_time - start_time
                 # record "ts" timesteps that it took the agent to get to the solution (end state)
-                self.performance_df['steps_per_episode'][self.num_episodes] = ts
+                self.performance_df.loc[self.num_episodes, 'steps_per_episode'] = ts
                 ts = 0
                 self.elig_trace = np.zeros(self.elig_trace.shape)  # Reset eligibility matrix
                 self.num_episodes += 1  # Record that we got to the end

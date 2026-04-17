@@ -251,11 +251,14 @@ class Replay_Sim:
         mask = np.invert(np.isin(valid_states, goal_states))
         return valid_states[mask]
 
-    def get_act_probs(self, Q_mean):  # ADD?!? Q_var: |A|x1 array with the variance of the Q-value for each action
+    def get_act_probs(self, Q_mean, policy=None):
         """
         Calculate the probability of executing each action.
         Q_mean: |A|x1 array with the mean Q-value for each action
+        policy: 'e_greedy' or 'softmax'; defaults to self.params.actPolicy
         """
+        if policy is None:
+            policy = self.params.actPolicy
 
         # INITIALIZE VARIABLES
         probs = np.full(Q_mean.shape[0], np.nan)
@@ -263,7 +266,7 @@ class Replay_Sim:
         Q_mean = np.expand_dims(Q_mean, axis=0)
 
         # IMPLEMENT ACTION SELECTION STRATEGY
-        if self.params.actPolicy == 'e_greedy':
+        if policy == 'e_greedy':
             # notice that this loops through states, but often times this function receives only one state
             for s in range(Q_mean.shape[0]):
                 Q_opt = np.argwhere(Q_mean[s] == np.amax(Q_mean[s]))  # Find indices of actions with maximum value
@@ -275,13 +278,13 @@ class Replay_Sim:
                     # with probability epsilon, pick a random action:
                     probs += self.params.epsilon / len(Q_mean[s].flatten())
 
-        elif self.params.actPolicy == 'softmax':
+        elif policy == 'softmax':
             for s in range(Q_mean.shape[0]):
                 probs[s] = np.divide(np.exp(self.params.softmaxInvT * Q_mean[s]),
                                      np.sum(np.exp(self.params.softmaxInvT * Q_mean[s])))
         else:
             err_msg = "'{}' is an unrecognized strategy; use either 'e_greedy' or 'softmax')"
-            raise ValueError(err_msg.format(self.params.actPolicy))
+            raise ValueError(err_msg.format(policy))
         rows_sum_to_1 = abs(np.sum(probs, axis=1) - 1) < 1e-3  # boolean array checking if each row sums to 1
         if np.all(rows_sum_to_1):  # return probabilities if all rows sum to 1
             return probs
@@ -358,13 +361,13 @@ class Replay_Sim:
             for j in range(this_exp.shape[0]):
                 Q_mean = np.copy(self.Q[int(this_exp[j, 0])])
                 Qpre = Q_mean  # NOT USING THIS??
-                # Policy BEFORE backup
-                pA_pre = self.get_act_probs(Q_mean)
+                # Policy BEFORE backup (MATLAB gainTerm uses planPolicy)
+                pA_pre = self.get_act_probs(Q_mean, policy=self.params.planPolicy)
 
                 # Value of state stp1
                 stp1i = int(this_exp[-1, 3])
                 if self.params.onVSoffPolicy == 'on-policy':
-                    stp1_value = np.sum(np.multiply(self.Q[stp1i], self.get_act_probs(self.Q[stp1i])))
+                    stp1_value = np.sum(np.multiply(self.Q[stp1i], self.get_act_probs(self.Q[stp1i], policy=self.params.planPolicy)))
                 else:
                     stp1_value = np.max(self.Q[stp1i])
 
@@ -377,8 +380,8 @@ class Replay_Sim:
                 else:
                     Q_mean[act_taken] += self.params.alpha * (Q_target - Q_mean[act_taken])
 
-                # policy AFTER backup
-                pA_post = self.get_act_probs(Q_mean)
+                # policy AFTER backup (MATLAB gainTerm uses planPolicy)
+                pA_post = self.get_act_probs(Q_mean, policy=self.params.planPolicy)
 
                 # calculate gain
                 EV_pre = np.sum(np.multiply(pA_pre, Q_mean))
@@ -429,8 +432,11 @@ class Replay_Sim:
             is_goal_step = self.exp_arr_full[-1, 3] in np.ravel_multi_index(
                 [goal[:, 0], goal[:, 1]], [self.side_ii, self.side_jj])
         elif curr_or_prev == 'prev':
-            is_goal_step = [self.exp_arr_full[-2, 0], self.exp_arr_full[-2, 3]] == [np.ravel_multi_index(
-                [goal[:, 0], goal[:, 1]], [self.side_ii, self.side_jj]), self.this_starting_state_i]
+            # MATLAB: any(ismember([expList(end-1,4); expList(end-1,1)], goal_states))
+            # True if EITHER the previous step's end state OR start state was a goal state
+            goal_states = np.ravel_multi_index(
+                [goal[:, 0], goal[:, 1]], [self.side_ii, self.side_jj])
+            is_goal_step = np.any(np.isin([self.exp_arr_full[-2, 3], self.exp_arr_full[-2, 0]], goal_states))
             # assert not self.params.s_start_rand, "Needs to be non-random starting state to assess this transition"
             # is_goal_step = np.all(np.isin([self.exp_arr_full[-2, 3], self.exp_arr_full[-2, 0]], [np.ravel_multi_index(
             #     [goal[:, 0], goal[:, 1]], [self.side_ii, self.side_jj]), np.ravel_multi_index(
@@ -524,7 +530,7 @@ class Replay_Sim:
                     seq_so_far = planning_backups[seq_start[0]:, 0:4]
                     sn = int(seq_so_far[-1, 3])  # Final state reached in the last planning step
                     if self.params.onVSoffPolicy == 'on-policy':
-                        probs = self.get_act_probs(self.Q[sn])  # Appended experience is sampled on-policy
+                        probs = self.get_act_probs(self.Q[sn], policy=self.params.planPolicy)  # Appended experience is sampled on-policy
                     else:
                         probs = np.zeros(self.Q[sn].shape)
                         # Appended experience is sampled greedily:
@@ -576,17 +582,11 @@ class Replay_Sim:
 
                 # Expected value of memories
 
+                # MATLAB: EVM(i) = sum(need{i}(end) .* max(gain{i}, params.baselineGain))
+                # max(array, scalar) in MATLAB is element-wise (np.maximum), then summed.
                 EVM = np.full((len(plan_exp)), np.nan)
                 for i in range(len(plan_exp)):
-                    if len(plan_exp[i].shape) == 1:
-                        EVM[i] = need[i][-1] * max(float(gain[i][-1]), self.params.baselineGain)
-                    elif len(plan_exp[i].shape) == 2:
-                        EVM[i] = sum(
-                            need[i][-1] * np.repeat(max(float(np.nanmax(gain[i])), self.params.baselineGain), len(gain[i])))
-                    else:
-                        err_msg = 'plan_exp[i] does not have the correct shape. It is {} but should have a ' \
-                                  'length equal to 1 or 2, e.g. (4,) or (2, 4)'.format(plan_exp[i].shape)
-                        raise ValueError(err_msg)
+                    EVM[i] = float(need[i][-1]) * float(np.sum(np.maximum(gain[i], self.params.baselineGain)))
 
                 # PERFORM THE UPDATE
                 opport_cost = np.nanmean(self.exp_arr_full[:, 2])  # Average expected reward from a random act
@@ -611,9 +611,14 @@ class Replay_Sim:
                     else:
                         max_EVM_idx = max_EVM_idx[0][0]
 
-                    plan_exp_arr = np.array(plan_exp, dtype=object)
+                    # plan_exp entries may be 1-D (4,) or 2-D (n,4) — avoid NumPy broadcast errors
+                    plan_exp_arr = np.empty(len(plan_exp), dtype=object)
+                    for _i, _e in enumerate(plan_exp):
+                        plan_exp_arr[_i] = _e
                     if len(plan_exp_arr[max_EVM_idx].shape) == 1:
                         plan_exp_arr_max = np.expand_dims(plan_exp_arr[max_EVM_idx], axis=0)
+                    else:
+                        plan_exp_arr_max = plan_exp_arr[max_EVM_idx]
 
                     for n in range(plan_exp_arr_max.shape[0]):
                         # Retrieve information from this experience
@@ -642,25 +647,22 @@ class Replay_Sim:
                             self.Q[s_plan, a_plan] = Q_target
                         else:
                             self.Q[s_plan, a_plan] += self.params.alpha * (Q_target - self.Q[s_plan, a_plan])
-                    times_for_EVB += time.perf_counter() - times_for_EVB
-
-                    # self.times_for_EVB[self.num_episodes][p - 1] = time.perf_counter() - times_for_EVB
+                    times_for_EVB += time.perf_counter() - EVB_start_time
 
                     # List of planning backups (to be used in creating a plot with the full planning trajectory/trace)
+                    # MATLAB saves the full gain/need vector; Python storage is fixed-width (nPlan scalars per step),
+                    # so we store the first (or only) element as a representative value.
                     backups_gain.append(gain[max_EVM_idx][0])  # List of GAIN for backups executed
                     backups_need.append(need[max_EVM_idx][0])  # List of NEED for backups executed
                     backups_EVM.append(EVM[max_EVM_idx])  # List of EVM for backups executed
 
+                    # MATLAB: [planExp{maxEVM_idx}(end,1:4)  size(planExp{maxEVM_idx},1)]
+                    # Store last step of trajectory + total n_steps, always a 5-element row
+                    new_row = np.append(plan_exp_arr_max[-1, :4], plan_exp_arr_max.shape[0])
                     if planning_backups.shape[0] > 0:
-                        planning_backups = np.vstack(
-                            [planning_backups, np.append(plan_exp_arr_max, plan_exp_arr_max.shape[0])])
-                    elif planning_backups.shape[0] == 0:
-                        planning_backups = np.append(plan_exp_arr_max,
-                                                     plan_exp_arr_max.shape[0]).reshape(1, planning_backups.shape[1])
+                        planning_backups = np.vstack([planning_backups, new_row])
                     else:
-                        err_msg = 'planning_backups does not have the correct shape. It is {} but should have a ' \
-                                  'length equal to 1 or 2, e.g. (5,) or (2, 5)'.format(planning_backups.shape)
-                        raise ValueError(err_msg)
+                        planning_backups = new_row.reshape(1, 5)
                     p += 1  # Increment planning counter
                 else:
                     break
@@ -947,22 +949,23 @@ class Replay_Sim:
             self.num_episodes_arr[tsi] = self.num_episodes
             assert self.exp_arr.shape[0] == tsi + 1, 'self.exp_arr has incorrect size'
             if planning_backups.shape[0] > 0:  # If there was planning in this timestep
-                if planning_backups.shape[0] < 20:  # if less than 20 planning steps (e.g. priotitized sweeping)
-                    n_missing_rows = 20 - planning_backups.shape[0]
+                nPlan = self.params.nPlan
+                if planning_backups.shape[0] < nPlan:
+                    n_missing_rows = nPlan - planning_backups.shape[0]
                     # fill missing rows with nans
                     planning_backups = np.vstack([planning_backups, np.full((n_missing_rows, 5), np.nan)])
                 # In a multi-step sequence, self.replay['state'] has 1->2 in one row, 2->3 in another row, etc
-                self.replay['state'][tsi] = planning_backups[:, 0]
-                self.replay['action'][tsi] = planning_backups[:, 1]
+                self.replay['state'][tsi] = planning_backups[:nPlan, 0]
+                self.replay['action'][tsi] = planning_backups[:nPlan, 1]
                 backups = {'gain': backups_gain, 'need': backups_need, 'EVM': backups_EVM, 'TD': backups_TD}
                 for key in backups:
                     backup = backups[key]
                     if len(backup) > 0:  # if not empty
-                        if len(backup) < 20:
-                            n_missing_rows = 20 - len(backup)
+                        if len(backup) < nPlan:
+                            n_missing_rows = nPlan - len(backup)
                             for i in range(n_missing_rows):
                                 backup.append(np.nan)
-                        self.replay[key][tsi] = backup
+                        self.replay[key][tsi] = backup[:nPlan]
 
             # If max number of episodes is reached, trim down simData.replay
             if self.num_episodes == self.params.MAX_N_EPISODES:
